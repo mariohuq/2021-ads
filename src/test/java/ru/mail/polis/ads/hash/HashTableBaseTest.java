@@ -39,11 +39,24 @@ class HashTableBaseTest {
         }
     }
 
+    // Has the same hashCode for each instance
+    static class AntiKey {
+        @Override
+        public int hashCode() {
+            return 0x314;
+        }
+    }
+
+
     HashTable<String, String> newTable() {
         return new HashTableImpl<>();
     }
 
     HashTable<Key, String> newStrangeKeyTable() {
+        return new HashTableImpl<>();
+    }
+
+    HashTable<AntiKey, String> newAntiKeyTable() {
         return new HashTableImpl<>();
     }
 
@@ -254,5 +267,21 @@ class HashTableBaseTest {
         for (Map.Entry<Key, String> entry: reference.entrySet()) {
             assertEquals(entry.getValue(), table.get(new Key(entry.getKey().value)));
         }
+    }
+
+    @Test
+    void removeWithCollision() {
+        HashTable<AntiKey, String> table = newAntiKeyTable();
+        AntiKey key0 = new AntiKey();
+        AntiKey key1 = new AntiKey();
+        AntiKey key2 = new AntiKey();
+
+        table.put(key0, "0");
+        assertNull(table.remove(key1));
+        table.put(key1, "1");
+        assertNull(table.remove(key2));
+        assertEquals("0", table.remove(key0));
+        assertEquals("1", table.remove(key1));
+        assertTrue(table.isEmpty());
     }
 }
